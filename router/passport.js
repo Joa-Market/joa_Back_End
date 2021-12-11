@@ -2,6 +2,7 @@ const express = require("express");
 const passport = require("passport");
 const passportlogin = require("../controller/passprotlogin")
 const { isLoggedIn, isNotLoggedIn } = require("../middlewares/passportmid");
+const { signup } = require("../controller/user");
 const jwt = require("jsonwebtoken");
 
 const router = express.Router();
@@ -43,5 +44,7 @@ router.get(
     }
   }
 );
+
+router.post("/signup",isNotLoggedIn, signup)
 
 module.exports = router;
