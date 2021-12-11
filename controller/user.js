@@ -1,17 +1,14 @@
-const { User, sequelize } = require("../models");
+const { user, sequelize, address } = require("../models");
 const crypto = require("crypto");
-const jwt = require("jsonwebtoken");
 const multer = require("multer"); //form data 처리를 할수 있는 라이브러리 multer
 const multerS3 = require("multer-s3"); // aws s3에 파일을 처리 할수 있는 라이브러리 multer-s3
-const AWS = require("aws-sdk"); //javascript 용 aws 서비스 사용 라이브러리
 const path = require("path"); //경로지정
 const fs = require("fs");
-require("dotenv").config({ path: __dirname + "\\" + ".env" });
 const { logger } = require("../config/logger"); //로그
 
 async function emailCheck(email) {
     try {
-        const isemail = await User.findOne({ where: { email: email } });
+        const isemail = await user.findOne({ where: { email: email } });
         if (isemail) {
             return true;
         } else {
@@ -25,7 +22,7 @@ async function emailCheck(email) {
 
 async function nickNameCheck(nickname) {
     try {
-        const isemail = await User.findOne({ where: { nickname: nickname } });
+        const isemail = await user.findOne({ where: { nickname: nickname } });
         if (isemail) {
             return true;
         } else {
@@ -68,6 +65,7 @@ signup = async (req, res) => {
     const { nickName, email, pw } = req.body;
     try {
         if (await emailCheck(email)) {
+            logger.error("POST /signup 이메일 중복");
             return res
                 .status(400)
                 .send({ result: "fail", msg: "이메일이 중복되었습니다." });
@@ -77,23 +75,42 @@ signup = async (req, res) => {
                 .createHash("sha512")
                 .update(pw + salt)
                 .digest("hex");
-            const users = User.create({
-                nickname:nickName,
+            const users = user.create({
+                nickname: nickName,
                 email: email,
-                pw : hashpw,
-                salt : salt
+                pw: hashpw,
+                salt: salt
             })
             logger.info("POST /signup");
             return res.status(200).send({ result: "success", msg: "회원가입 완료." });
         }
     } catch (error) {
-        logger.error(error);
-        return res
-            .status(400)
+        logger.error("POST /signup"+error);
+        return res.status(400)
             .send({ result: "fail", msg: "DB 정보 조회 실패", error: error });
     }
 };
 
+addaddress = async (req, res) => {
+    const { x, y } = req.body;
+    const user = res.locals.user;
+    try {
+        const addresses = address.create({
+            address_name: "test",
+            road_address_name: "test",
+            x: x,
+            y: y,
+            userid: user.id,
+        })
+        logger.info("POST /adress");
+        return res.status(200).send({ result: "success", msg: "주소 설정완료..!" });
+    } catch (error) {
+        logger.error("POST /adress"+error);
+        return res.status(400).send({ result: "fail", msg: "주소 설정실패 확인요망!" });
+    }
+
+}
 module.exports = {
     signup: signup,
-  };
+    addaddress: addaddress,
+};
