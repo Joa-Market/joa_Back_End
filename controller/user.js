@@ -110,7 +110,19 @@ addaddress = async (req, res) => {
     }
 
 }
+
+getmyuser = async (req, res) =>{
+    const user = res.locals.user;
+    if(!user){
+        logger.error("GET /user 유저없음");
+        return res.status(400).send({ result: "fail", msg: "해당 유저 없음" });
+    }else{
+        logger.info("GET /user");
+        return res.status(200).send({ result: "success", msg: "불러오기 성공", user });
+    }
+}
 module.exports = {
     signup: signup,
     addaddress: addaddress,
+    getmyuser: getmyuser,
 };
