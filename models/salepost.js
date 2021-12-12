@@ -70,6 +70,9 @@ module.exports = (sequelize, DataTypes) => {
         models.address.belongsTo(models.user, {
             foreignKey: 'userid', targetKey: 'id'
         });
+        models.address.belongsTo(models.address, {
+            foreignKey: 'userid', targetKey: 'id'
+        });
     };
     return salepost;
 };
